@@ -1,0 +1,43 @@
+name: Deploy ZIP para GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # Atualizado para o nome correto do seu arquivo ZIP
+      - name: Extrair o site do ZIP
+        run: |
+          mkdir pasta_extraida
+          unzip NEXORA-GITHUB.zip -d pasta_extraida
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      # Faz o upload apenas do que foi extraído do ZIP
+      - name: Fazer o upload do conteúdo extraído
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './pasta_extraida'
+
+      - name: Executar o Deploy no Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
